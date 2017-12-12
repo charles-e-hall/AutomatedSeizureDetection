@@ -10,6 +10,14 @@ import datetime
 def returnDataBlock(filename):
     #filename must be a csv file
     f = open(filename, 'r').read().split('\r')
+    Header = [f[0].split(','), f[1].split(',')]
+    dataBlock = []
+
+    for i in range(3,24):
+        dataBlock.append(f[i].split(','))
+    
+    df_out = pd.DataFrame(dataBlock)
+    return df_out
     
     
 def getSeizuresFromBlock(DF, filenames):
