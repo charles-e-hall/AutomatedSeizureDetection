@@ -3,7 +3,7 @@
 #EEG files
 
 import numpy as np
-import pandas as pd
+#import pandas as pd
 import MySQLdb
 import datetime
 
@@ -16,21 +16,22 @@ def returnDataBlock(filename):
     for i in range(3,24):
         dataBlock.append(f[i].split(','))
     
-    df_out = pd.DataFrame(dataBlock)
-    return df_out
+#    df_out = pd.DataFrame(dataBlock)
+#    return df_out
+    return dataBlock
     
     
-def getSeizuresFromBlock(DF, filenames):
+def getSeizuresFromBlock(DF):
     #Getting date and filenames for the block
-    [month, day, year] = DF.loc[0][0].split('/')
+    [month, day, year] = DF[0][0].split('/')
     year = '20' + year
     datenum = datetime.date.toordinal(datetime.date(int(year), int(month), int(day)))
     #Making filename reference for the block
     filenames = []
-    fname = DF.loc[0][1]
+    fname = DF[0][1]
     for i in range(2,np.shape(DF)[1]):
-        if DF.loc[0][i]:
-            fname = DF.loc[0][i]
+        if DF[0][i]:
+            fname = DF[0][i]
             filenames.append(fname)
         else:
             filenames.append(fname)
@@ -43,19 +44,39 @@ def getSeizuresFromBlock(DF, filenames):
     chan4 = []
 
     for i in range(2,np.shape(DF)[1]):
-        if DF.loc[1][i]:
-            chan1.append((datenum, filenames[i-2], DF.loc[start_idx[0]][i], DF.loc[start_idx[0]+1][i]))
+        if DF[1][i]:
+            ts1 = (datenum+float(DF[start_idx[0]][i].split(':')[0])+float(DF[start_idx[0]][i].split(':')[1])/60+float(DF[start_idx[0]][i].split(':')[2])/3600)/24.
+            ts2 = (datenum+float(DF[start_idx[0]+1][i].split(':')[0])+float(DF[start_idx[0]+1][i].split(':')[1])/60.+float(DF[start_idx[0]+1][i].split(':')[2])/3600.)/24.
+            chan1.append((filenames[i-2], datenum, 1, DF[start_idx[0]][i], DF[start_idx[0]+1][i], ts1, ts2))
         
-        if DF.loc[6][i]:
-            chan2.append((datenum, filenames[i-2], DF.loc[start_idx[1]][i], DF.loc[start_idx[1]+1][i]))
+        if DF[6][i]:
+            ts1 = (datenum+float(DF[start_idx[1]][i].split(':')[0])+float(DF[start_idx[1]][i].split(':')[1])/60.+float(DF[start_idx[1]][i].split(':')[2])/3600.)/24.
+            ts2 = (datenum+float(DF[start_idx[1]+1][i].split(':')[0])+float(DF[start_idx[1]+1][i].split(':')[1])/60.+float(DF[start_idx[1]+1][i].split(':')[2])/3600.)/24.
+            chan2.append((filenames[i-2], datenum, 2, DF[start_idx[1]][i], DF[start_idx[1]+1][i], ts1, ts2))
             
-        if DF.loc[11][i]:
-            chan3.append((datenum, filenames[i-2], DF.loc[start_idx[2]][i], DF.loc[start_idx[2]+1][i]))
+        if DF[11][i]:
+            ts1 = (datenum+float(DF[start_idx[2]][i].split(':')[0])+float(DF[start_idx[2]][i].split(':')[1])/60.+float(DF[start_idx[2]][i].split(':')[2])/3600.)/24.
+            ts2 = (datenum+float(DF[start_idx[2]+1][i].split(':')[0])+float(DF[start_idx[2]+1][i].split(':')[1])/60.+float(DF[start_idx[2]+1][i].split(':')[2])/3600.)/24.
+            chan3.append((filenames[i-2], datenum, 3, DF[start_idx[2]][i], DF[start_idx[2]+1][i], ts1, ts2))
             
-        if DF.loc[16][i]:
-            chan4.append((datenum, filenames[i-2], DF.loc[start_idx[3]][i], DF.loc[start_idx[3]+1][i]))
+        if DF[16][i]:
+            ts1 = (datenum+float(DF[start_idx[3]][i].split(':')[0])+float(DF[start_idx[3]][i].split(':')[1])/60.+float(DF[start_idx[3]][i].split(':')[2])/3600.)/24.
+            ts2 = (datenum+float(DF[start_idx[3]+1][i].split(':')[0])+float(DF[start_idx[3]+1][i].split(':')[1])/60.+float(DF[start_idx[3]+1][i].split(':')[2])/3600.)/24.
+            chan4.append((filenames[i-2], datenum, 4, DF[start_idx[3]][i], DF[start_idx[3]+1][i], ts1, ts2))
     
-    return [chan1, chan2, chan3, chan4]    
+    SeizureDF = []
+
+    if chan1:
+        SeizureDF.append(chan1)
+    elif chan2:
+        SeizureDF.append(chan2)
+    elif chan3:
+        SeizureDF.append(chan3)
+    elif chan4:
+        SeizureDF.append(chan4)
+
+    return SeizureDF
+
 
 
 
@@ -73,14 +94,17 @@ def insertEvents(df, Host, Port, DB, uname, pwd):
 #                event_start_tmstmp FLOAT, 
 #                event_stop_tmstmp FLOAT);"
     
+#    for j in range(np.shape(df)[0]):
+#        sql = "INSERT INTO nicolet_event_log VALUES ({}, {}, {}, {}, {}, {}, {}, {});".format(*(df.loc[j][i] for i in range(8)))
+ 
     for j in range(np.shape(df)[0]):
-        sql = "INSERT INTO nicolet_event_log VALUES ({}, {}, {}, {}, {}, {}, {}, {});".format(*(df.loc[j][i] for i in range(8)))
-    
+        sql = "INSERT INTO nicolet_event_log VALUES ({}, {}, {}, {}, {}, {}, )"
+
     try:
         handle.execute(sql)
     except:
         print "INSERT statement failed!"
-        raise
+
     
     handle.execute(sql)
     db.close()
