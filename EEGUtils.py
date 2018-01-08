@@ -9,13 +9,17 @@ import datetime
 from Crypto.Hash import MD5
 import math
 
-def returnDataBlock(filename):
+def returnDataBlock(filename, blocknum):
     #filename must be a csv file
     f = open(filename, 'r').read().split('\r')
     Header = [f[0].split(','), f[1].split(',')]
     dataBlock = []
 
-    for i in range(3,24):
+    assert blocknum in range(7), 'Blocknum is out of range'
+    #there are 7 blocks, one for each day of the week.  I am using
+    #standard convention of labeling them 0-6
+
+    for i in range(3+blocknum*22,24+blocknum*22):
         dataBlock.append(f[i].split(','))
     
 #    df_out = pd.DataFrame(dataBlock)
@@ -112,8 +116,8 @@ def insertEvents(df, Host, Port, DB, uname, pwd):
 #    for j in range(np.shape(df)[0]):
 #        sql = "INSERT INTO nicolet_event_log VALUES ({}, {}, {}, {}, {}, {}, {}, {});".format(*(df.loc[j][i] for i in range(8)))
  
-    for j in range(np.shape(df)[0]):
-        sql = "INSERT INTO nicolet_event_log VALUES ({}, '{}', {}, {}, '{}', '{}', {}, {});".format(*(df[j][j][i] for i in range(8)))
+    for j in range(np.shape(df)[1]):
+        sql = "INSERT INTO nicolet_event_log VALUES ({}, '{}', {}, {}, '{}', '{}', {}, {});".format(*(df[0][j][i] for i in range(8)))
 
         try:
             handle.execute(sql)
