@@ -7,7 +7,7 @@ import MySQLdb
 import sys
 
 #Use command line argument of 1 to drop the table and re-create it
-if sys.argv[1]:
+if sys.argv[1]==1:
 	db = MySQLdb.connect(host='eeg.cpivbi1tmjzn.us-east-2.rds.amazonaws.com', port=3306, user='charlie', passwd='Standard01', db='eegevents')
 	h = db.cursor()
 	sql1 = "DROP TABLE IF EXISTS nicolet_file_map; CREATE TABLE nicolet_file_map (hard_drive VARCHAR(255), path VARCHAR(255), filename VARCHAR(255)); COMMIT;"
@@ -34,16 +34,28 @@ def getNicoletFiles(path):
 
 
 paths, files = getNicoletFiles('/Volumes/TOSHIBA EXT/pY816 DM Experiment 5')
+#paths, files = getNicoletFiles('/Volumes/Seagate Backup Plus Drive/EEG CPU 3')
+
+print "Paths have been gathered from the hard drive.\n"
 
 DB = MySQLdb.connect(host='eeg.cpivbi1tmjzn.us-east-2.rds.amazonaws.com', port=3306, user='charlie', passwd='Standard01', db='eegevents')
 
 handle = DB.cursor()
-hardDrive = 'Keshov CPU 2'
+hardDrive = 'CPU 2'
+
+print "There are {} rows to insert.\n".format(len(paths))
 
 for i in range(len(paths)):
     sql = "INSERT INTO nicolet_file_map VALUES ('{}', '{}', '{}');".format(hardDrive, paths[i], files[i])
+    print "\nExecuting Line:\n"
+    print sql
     handle.execute(sql)
+    # if i % 10 == 0:
+    #     print "Rows inserted: {}\n".format(i)
+    print "Rows inserted: {}\n".format(i)
 
 handle.execute("COMMIT;")
+
+print "All rows have been committed\n"
 
 DB.close()
