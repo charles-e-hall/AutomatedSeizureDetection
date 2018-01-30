@@ -5,10 +5,13 @@
 import os
 import MySQLdb
 import sys
+import settings
+
+settings.init()
 
 #Use command line argument of 1 to drop the table and re-create it
 if sys.argv[1]==1:
-	db = MySQLdb.connect(host='eeg.cpivbi1tmjzn.us-east-2.rds.amazonaws.com', port=3306, user='charlie', passwd='Standard01', db='eegevents')
+	db = MySQLdb.connect(host=settings.DB_ENDPOINT, port=settings.DB_PORT, user=settings.DB_USER, passwd=settings.DB_PASSWORD, db=settings.DB_NAME)
 	h = db.cursor()
 	sql1 = "DROP TABLE IF EXISTS nicolet_file_map; CREATE TABLE nicolet_file_map (hard_drive VARCHAR(255), path VARCHAR(255), filename VARCHAR(255)); COMMIT;"
 	h.execute(sql1)
