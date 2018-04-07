@@ -1,9 +1,12 @@
-function NicoletToBinary(source_path, dest_path, start, stop, buffer)
+function NicoletToBinary(source_path, dest_path, start, stop, buffer, channel)
 obj = NicoletFile(source_path);
 assert(length(start)==3, 'start must be a 3 element vector');
 assert(length(stop)==3, 'stop must be a 3 element vector');
 start = cell2mat(start);
 stop = cell2mat(stop);
+channel = uint8(channel);
+fprintf('%u', channel);
+fprintf('\n');
 
 [seg_start, seg_stop] = getFilePos(obj.segments(1).startTime, start, stop, buffer, obj.segments(1).samplingRate(1));
 
@@ -35,6 +38,7 @@ fh = fopen(dest_path, 'a', 'ieee-le');
 %Write header information (Number of samples per channel)
 totSamps = seg_stop - seg_start;
 fwrite(fh, totSamps, 'uint64', 'ieee-le');
+fwrite(fh, channel, 'uint8', 'ieee-le');
 
 fwrite(fh, data, 'float', 'ieee-le');
 

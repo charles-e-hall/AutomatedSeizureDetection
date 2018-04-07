@@ -38,9 +38,9 @@ eng = matlab.engine.start_matlab()
 
 for i in range(len(path)):
 	source_path = path[i] + '/' + file[i]
-	dest_path = '/Volumes/dusom_mcnamaralab/all_staff/Charlie/NicoletEventFiles/' + events[i][1] + '_Event{}.bin'.format(i)
-	start = (int(events[i][4].split(':')[0]), int(events[i][4].split(':')[1]), int(events[i][4].split(':')[2]))
-	stop = (int(events[i][5].split(':')[0]), int(events[i][5].split(':')[1]), int(events[i][5].split(':')[2]))
+	dest_path = '/Volumes/dusom_mcnamaralab/all_staff/Charlie/NicoletControlFiles/' + events[i][1] + '_Control{}.bin'.format(i)
+	start = (int(events[i][4].split(':')[0]), int(events[i][4].split(':')[1])-5, int(events[i][4].split(':')[2]))
+	stop = (int(events[i][5].split(':')[0]), int(events[i][5].split(':')[1])-5, int(events[i][5].split(':')[2]))
 	channel = int(events[i][3])
 	print "Channel: {}\n".format(channel)
 	eng.NicoletToBinary(source_path, dest_path, start, stop, 60, channel, nargout=0)
